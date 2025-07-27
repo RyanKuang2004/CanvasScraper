@@ -166,13 +166,30 @@ class CanvasClient:
             try:
                 async with session.get(download_url) as response:
                     if response.status == 200:
-                        content = await response.text()
-                        self.logger.debug(f"Successfully retrieved file content for file {file_id}")
-                        return content
+                        # Get content type to determine how to handle the file
+                        content_type = file_info.get("content-type", "").lower()
+                        
+                        if content_type.startswith("text/") or "html" in content_type:
+                            # Text files can be decoded as UTF-8
+                            content = await response.text()
+                            self.logger.debug(f"Successfully retrieved text content for file {file_id}")
+                            return content
+                        else:
+                            # Binary files (PDF, PPTX, etc.) - return metadata for now
+                            file_size = len(await response.read())
+                            filename = file_info.get("display_name", "Unknown")
+                            content_summary = f"Binary file: {filename} ({content_type}, {file_size} bytes)"
+                            self.logger.debug(f"Retrieved binary file info for file {file_id}: {content_summary}")
+                            return content_summary
                     else:
                         self.logger.warning(f"Failed to download file {file_id}: {response.status}")
             except aiohttp.ClientError as e:
                 self.logger.error(f"Network error downloading file {file_id}: {str(e)}")
+            except UnicodeDecodeError as e:
+                # Handle files that look like text but have encoding issues
+                self.logger.warning(f"Encoding error for file {file_id}: {str(e)}")
+                filename = file_info.get("display_name", "Unknown")
+                return f"File with encoding issues: {filename}"
         return None
 
     async def fetch_module_item_content(self, session: aiohttp.ClientSession, course_id: int, module_item: Dict[str, Any]) -> Optional[str]:
