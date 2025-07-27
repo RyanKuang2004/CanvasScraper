@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  canvas-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+        VERSION: ${VERSION:-latest}
+        VCS_REF: ${VCS_REF:-unknown}
+    container_name: canvas-scraper
+    restart: unless-stopped
+    environment:
+      - CANVAS_API_TOKEN=${CANVAS_API_TOKEN}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount logs directory for persistence
+      - ./logs:/app/logs
+      # Mount .env file (optional, for local development)
+      - ./.env:/app/.env:ro
+    networks:
+      - canvas-network
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from config import Config; Config.validate()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  canvas-network:
+    driver: bridge

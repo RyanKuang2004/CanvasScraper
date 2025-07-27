@@ -1,0 +1,98 @@
+# Security Configuration for Canvas Scraper
+# This file defines security best practices and configurations
+
+security_requirements:
+  authentication:
+    api_token_storage: "AWS SSM Parameter Store (SecureString)"
+    token_rotation: "Manual - recommend 90 days"
+    access_control: "IAM role-based access"
+    
+  network_security:
+    vpc_isolation: true
+    security_groups:
+      ssh_access: "Restricted to deployment IP only"
+      application_ports: "No external exposure (internal only)"
+      outbound: "HTTPS only to Canvas API endpoints"
+    
+  encryption:
+    data_in_transit: "TLS 1.2+ for all API calls"
+    data_at_rest: "EBS volume encryption enabled"
+    secrets_management: "AWS SSM Parameter Store with KMS encryption"
+    
+  container_security:
+    base_image: "Official Python slim image - regularly updated"
+    non_root_user: "Application runs as non-root user (uid 1000)"
+    resource_limits: "Memory and CPU limits enforced"
+    health_checks: "Built-in health monitoring"
+    
+  monitoring_and_logging:
+    cloudwatch_logs: "All application logs centralized"
+    security_events: "Failed API calls, authentication failures"
+    metric_monitoring: "Error rates, response times, resource usage"
+    alerting: "CloudWatch alarms for critical events"
+
+compliance_checklist:
+  - name: "API Token Security"
+    status: "✅ Implemented"
+    details: "Stored in AWS SSM Parameter Store with encryption"
+    
+  - name: "Network Isolation"
+    status: "✅ Implemented"
+    details: "VPC with restricted security groups"
+    
+  - name: "Least Privilege Access"
+    status: "✅ Implemented"
+    details: "IAM role with minimal required permissions"
+    
+  - name: "Container Security"
+    status: "✅ Implemented"
+    details: "Non-root user, resource limits, health checks"
+    
+  - name: "Audit Logging"
+    status: "✅ Implemented"
+    details: "CloudWatch logs with retention policy"
+    
+  - name: "Vulnerability Scanning"
+    status: "✅ Implemented"
+    details: "Trivy scanner in CI/CD pipeline"
+    
+  - name: "Secure Deployment"
+    status: "✅ Implemented"
+    details: "Automated deployment with security validation"
+
+security_hardening:
+  ec2_instance:
+    - "Regular OS updates via user data script"
+    - "CloudWatch agent for monitoring"
+    - "Restricted SSH access with key pairs only"
+    - "No unnecessary services or ports exposed"
+    
+  docker_container:
+    - "Multi-stage build to minimize attack surface"
+    - "Non-root user execution"
+    - "Read-only filesystem where possible"
+    - "Resource constraints to prevent DoS"
+    
+  application:
+    - "Input validation for all API responses"
+    - "Proper error handling without information leakage"
+    - "Rate limiting considerations for API calls"
+    - "Secure HTTP client configuration"
+
+incident_response:
+  detection:
+    - "CloudWatch alarms for unusual activity"
+    - "Log analysis for failed authentication attempts"
+    - "Monitoring for unexpected resource usage"
+    
+  response_procedures:
+    - "Immediate: Revoke compromised API tokens"
+    - "Short-term: Isolate affected instances"
+    - "Medium-term: Analyze logs and assess impact"
+    - "Long-term: Implement additional security measures"
+    
+  recovery:
+    - "Restore from known good state"
+    - "Update all credentials and tokens"
+    - "Review and update security configurations"
+    - "Document lessons learned"
