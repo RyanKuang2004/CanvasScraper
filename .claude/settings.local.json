@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(rm:*)",
+      "Bash(source:*)",
+      "Bash(python -m pytest tests/ -v)"
+    ],
+    "deny": []
+  }
+}

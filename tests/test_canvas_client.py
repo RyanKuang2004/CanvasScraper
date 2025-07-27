@@ -24,7 +24,7 @@ class TestCanvasClient:
     @pytest.fixture
     def mock_session(self):
         """Create a mock aiohttp session."""
-        session = AsyncMock()
+        session = Mock()
         return session
 
     @pytest.mark.asyncio
@@ -33,7 +33,12 @@ class TestCanvasClient:
         mock_response = Mock()
         mock_response.status = 200
         mock_response.json = AsyncMock(return_value={"test": "data"})
-        mock_session.get.return_value.__aenter__.return_value = mock_response
+        
+        # Create a proper async context manager mock
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+        mock_session.get.return_value = mock_cm
 
         result = await client._get(mock_session, "/test-endpoint")
         
@@ -48,7 +53,12 @@ class TestCanvasClient:
         """Test GET request returning 404."""
         mock_response = Mock()
         mock_response.status = 404
-        mock_session.get.return_value.__aenter__.return_value = mock_response
+        
+        # Create a proper async context manager mock
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+        mock_session.get.return_value = mock_cm
 
         result = await client._get(mock_session, "/nonexistent")
         
@@ -59,7 +69,12 @@ class TestCanvasClient:
         """Test GET request returning error status."""
         mock_response = Mock()
         mock_response.status = 500
-        mock_session.get.return_value.__aenter__.return_value = mock_response
+        
+        # Create a proper async context manager mock
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+        mock_session.get.return_value = mock_cm
 
         with pytest.raises(Exception, match="Failed to fetch /error: 500"):
             await client._get(mock_session, "/error")
@@ -161,7 +176,11 @@ class TestCanvasClient:
         mock_file_response.text = AsyncMock(return_value="File content")
 
         with patch.object(client, '_get', return_value=mock_file_info):
-            mock_session.get.return_value.__aenter__.return_value = mock_file_response
+            # Create a proper async context manager mock
+            mock_cm = AsyncMock()
+            mock_cm.__aenter__ = AsyncMock(return_value=mock_file_response)
+            mock_cm.__aexit__ = AsyncMock(return_value=None)
+            mock_session.get.return_value = mock_cm
             
             result = await client.get_file_content(mock_session, 456)
             
