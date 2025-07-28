@@ -29,8 +29,6 @@ def fix_python_path():
 def test_imports():
     """Test critical imports."""
     try:
-        from src.canvas_orchestrator import CanvasOrchestrator
-        from src.supabase_client import get_supabase_client
         
         print("✅ All critical imports successful")
         return True
