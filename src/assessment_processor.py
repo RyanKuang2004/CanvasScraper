@@ -13,9 +13,9 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 from bs4 import BeautifulSoup
 
-from .content_fingerprint import ContentFingerprint
-from .text_chunker import TextChunker
-from .supabase_client import get_supabase_client
+from content_fingerprint import ContentFingerprint
+from text_chunker import TextChunker
+from supabase_client import get_supabase_client
 
 
 class AssessmentProcessingError(Exception):

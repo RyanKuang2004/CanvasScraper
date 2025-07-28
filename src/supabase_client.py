@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 import json
 
-from .text_chunker import TextChunk
-from .file_processor_manager import ProcessingResponse
+from text_chunker import TextChunk
+from file_processor_manager import ProcessingResponse
 
 try:
     from supabase import create_client, Client
