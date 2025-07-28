@@ -1,0 +1,104 @@
+# Canvas Scraper Course Configuration
+# Configure which courses to scrape and how to process them
+
+enabled_courses:
+  # Example course configurations
+  # Replace with your actual Canvas course IDs
+  
+  # Data Structures and Algorithms
+  123456:
+    name: "Data Structures and Algorithms"
+    enabled: true
+    modules: "all"  # or specific module IDs: [789, 790, 791]
+    file_types:
+      - "pdf"
+      - "pptx" 
+      - "docx"
+      - "txt"
+    priority: "high"
+    max_file_size_mb: 50
+    
+  # Machine Learning Fundamentals  
+  789012:
+    name: "Machine Learning Fundamentals"
+    enabled: true
+    modules: [456, 457, 458]  # Only specific modules
+    file_types: ["pdf", "pptx"]
+    priority: "normal"
+    max_file_size_mb: 25
+    
+  # Software Engineering (currently disabled)
+  345678:
+    name: "Software Engineering"
+    enabled: false
+    reason: "Course completed - archival only"
+    
+  # Database Systems
+  567890:
+    name: "Database Systems"
+    enabled: true
+    modules: "all"
+    file_types: ["pdf", "docx"]
+    priority: "normal"
+    max_file_size_mb: 30
+
+# Global scraping preferences
+scraping_preferences:
+  # Concurrency settings
+  max_concurrent_downloads: 5
+  max_concurrent_courses: 3
+  
+  # Text processing settings
+  chunk_size: 1000              # characters per chunk
+  chunk_overlap: 200            # character overlap between chunks
+  min_chunk_size: 100           # minimum characters for a chunk
+  
+  # File handling
+  supported_file_types: ["pdf", "pptx", "docx", "txt", "html"]
+  max_file_size_mb: 50         # global max file size
+  download_timeout_seconds: 300 # 5 minutes
+  
+  # Content filtering
+  skip_file_patterns:
+    - "*.tmp"
+    - ".*"                     # hidden files
+    - "*_backup.*"
+  
+  # Storage settings
+  local_cache_days: 7          # keep local cache for 7 days
+  compress_large_files: true   # compress files >10MB
+  
+  # Processing behavior
+  extract_images: false        # extract images from documents
+  extract_tables: true         # extract table content
+  preserve_formatting: true    # maintain document structure
+  
+  # Retry settings
+  max_retries: 3
+  retry_delay_seconds: 5
+  exponential_backoff: true
+
+# Course discovery settings
+discovery:
+  auto_discover_new_courses: true
+  exclude_concluded_courses: true
+  exclude_unpublished_courses: true
+  minimum_enrollment_state: "active"
+
+# Scheduling configuration
+scheduling:
+  enabled: true
+  timezone: "Australia/Melbourne"
+  
+  # Run times in Melbourne time
+  run_times:
+    - "12:00"  # Noon
+    - "20:00"  # 8 PM
+  
+  # Skip execution on these days
+  skip_days: []  # e.g., ["saturday", "sunday"]
+  
+  # Holiday calendar (ISO format dates to skip)
+  skip_dates:
+    - "2024-12-25"  # Christmas
+    - "2024-01-01"  # New Year
