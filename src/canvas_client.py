@@ -80,22 +80,80 @@ class CanvasClient:
             self.logger.error(error_msg)
             raise CanvasAPIError(error_msg, 0, endpoint)
             
+    async def _get_paginated(self, session: aiohttp.ClientSession, endpoint: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all items from a paginated Canvas API endpoint.
+
+        Args:
+            session: The active aiohttp client session.
+            endpoint: The initial API endpoint to request.
+
+        Returns:
+            A list containing all items from all pages.
+        """
+        all_results = []
+        url = f"{self.api_url}{endpoint}"
+
+        while url:
+            self.logger.debug(f"Fetching paginated data from: {url}")
+            try:
+                async with session.get(url, headers=self.headers) as response:
+                    if response.status != 200:
+                        error_msg = f"Failed to fetch paginated data from {url}: {response.status}"
+                        self.logger.error(error_msg)
+                        raise CanvasAPIError(error_msg, response.status, url)
+
+                    data = await response.json()
+                    if isinstance(data, list):
+                        all_results.extend(data)
+                    else:
+                        # Handle cases where a non-list is returned unexpectedly
+                        self.logger.warning(f"Expected a list from {url}, but got {type(data)}. Stopping pagination.")
+                        if not all_results: # If this was the first and only page
+                            return data
+                        break
+
+                    # Find the 'next' link in the Link header
+                    next_link = None
+                    link_header = response.headers.get('Link')
+                    if link_header:
+                        links = link_header.split(',')
+                        for link in links:
+                            parts = link.split(';')
+                            if len(parts) == 2 and parts[1].strip() == 'rel="next"':
+                                # Extract URL from <...>
+                                next_link = parts[0].strip()[1:-1]
+                                break
+                    url = next_link # Continue loop with the next URL, or exit if None
+            
+            except aiohttp.ClientError as e:
+                error_msg = f"Network error fetching paginated data from {url}: {str(e)}"
+                self.logger.error(error_msg)
+                raise CanvasAPIError(error_msg, 0, url)
+
+        self.logger.info(f"Fetched a total of {len(all_results)} items from endpoint: {endpoint}")
+        return all_results
+
     async def get_active_courses(self) -> List[Dict[str, Union[int, str]]]:
-        """Retrieve all active courses for the authenticated user.
+        """Retrieve all active courses for the authenticated user by handling pagination.
+        
+        This method is now more efficient by using the `enrollment_state=active` 
+        parameter to filter courses on the server side.
         
         Returns:
-            A list of dictionaries containing course information
+            A list of dictionaries containing course information.
         """
         async with self._get_session() as session:
-            courses = await self._get(session, "/courses")
-            if not courses:
+            # Use the paginated helper and the efficient 'enrollment_state' parameter
+            active_courses = await self._get_paginated(session, "/courses?enrollment_state=active")
+            
+            if not active_courses:
                 return []
             
+            # The API now only returns active courses, so no client-side filtering is needed.
             return [
                 {"id": course["id"], "name": course["name"]} 
-                for course in courses
-                if course.get("enrollments") and 
-                course["enrollments"][0].get("enrollment_state") == "active"
+                for course in active_courses
             ]
 
     async def get_modules(self, session: aiohttp.ClientSession, course_id: int) -> Optional[List[Dict[str, Any]]]:
@@ -108,7 +166,8 @@ class CanvasClient:
         Returns:
             A list of module dictionaries or None if not found
         """
-        return await self._get(session, f"/courses/{course_id}/modules")
+        # Note: This endpoint is also paginated. For full functionality, it should also use _get_paginated.
+        return await self._get_paginated(session, f"/courses/{course_id}/modules")
 
     async def get_module_items(self, session: aiohttp.ClientSession, course_id: int, module_id: int) -> Optional[List[Dict[str, Any]]]:
         """Retrieve all items within a module.
@@ -121,7 +180,8 @@ class CanvasClient:
         Returns:
             A list of module item dictionaries or None if not found
         """
-        return await self._get(session, f"/courses/{course_id}/modules/{module_id}/items")
+        # Note: This endpoint is also paginated. For full functionality, it should also use _get_paginated.
+        return await self._get_paginated(session, f"/courses/{course_id}/modules/{module_id}/items")
 
     async def get_page_content(self, session: aiohttp.ClientSession, course_id: int, page_url: str) -> Optional[str]:
         """Retrieve the content of a course page.
@@ -241,8 +301,8 @@ class CanvasClient:
                 self.logger.warning(f"Invalid date format: {due_at}, error: {e}")
                 return False
 
-        # Get assignments
-        assignments = await self._get(session, f"/courses/{course_id}/assignments")
+        # Get assignments (also paginated)
+        assignments = await self._get_paginated(session, f"/courses/{course_id}/assignments")
         assignment_data: List[Dict[str, Union[str, None]]] = []
         if assignments:
             assignment_data = [
@@ -251,8 +311,8 @@ class CanvasClient:
                 if is_upcoming(a.get('due_at'))
             ]
 
-        # Get quizzes
-        quizzes = await self._get(session, f"/courses/{course_id}/quizzes")
+        # Get quizzes (also paginated)
+        quizzes = await self._get_paginated(session, f"/courses/{course_id}/quizzes")
         quiz_data: List[Dict[str, Union[str, None]]] = []
         if quizzes:
             quiz_data = [
@@ -262,7 +322,7 @@ class CanvasClient:
             ]
 
         return assignment_data + quiz_data
-
+    
 def main() -> None:
     """Main function to run the Canvas client and fetch data."""
     # Configure logging
