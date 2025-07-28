@@ -165,10 +165,10 @@ initialize_app() {
     log "Testing Python dependencies..."
     python -c "
 import sys
-sys.path.insert(0, '/app/src')
+sys.path.insert(0, '/app')
 try:
-    from canvas_orchestrator import CanvasOrchestrator
-    from supabase_client import get_supabase_client
+    from src.canvas_orchestrator import CanvasOrchestrator
+    from src.supabase_client import get_supabase_client
     print('✅ All dependencies imported successfully')
 except ImportError as e:
     print(f'❌ Import error: {e}')
@@ -332,7 +332,7 @@ main() {
     # Execute the provided command or default
     if [[ $# -eq 0 ]]; then
         log "No command provided, starting enhanced orchestrator..."
-        exec python -m src.canvas_orchestrator
+        exec python scripts/run_enhanced_scraper.py run
     else
         log "Executing command: $*"
         exec "$@"

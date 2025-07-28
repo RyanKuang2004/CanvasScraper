@@ -10,8 +10,8 @@ import os
 import logging
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, '/app/src')
+# Add app to path
+sys.path.insert(0, '/app')
 
 def check_environment():
     """Check if required environment variables are present."""
@@ -34,7 +34,7 @@ def check_dependencies():
     try:
         import aiohttp
         import asyncio
-        from config import Config
+        from src.config import Config
         print("✅ Core dependencies import check passed")
         return True
     except ImportError as e:
@@ -61,7 +61,7 @@ def check_file_permissions():
 def check_canvas_config():
     """Check if Canvas configuration is valid."""
     try:
-        from config import Config
+        from src.config import Config
         
         # Basic URL validation
         if not Config.CANVAS_URL.startswith(('http://', 'https://')):

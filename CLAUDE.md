@@ -19,6 +19,11 @@ python scripts/run_enhanced_scraper.py daemon     # Scheduled daemon mode
 python scripts/run_enhanced_scraper.py search --query "machine learning"  # Search content
 python scripts/run_enhanced_scraper.py stats      # View processing statistics
 
+# Demo and testing utilities
+python scripts/canvas_demo.py                     # Consolidated demo utility
+python scripts/canvas_demo.py --action courses    # Get active courses only
+python scripts/canvas_demo.py --action verify     # Verify client functions
+
 # Legacy execution (original)
 python -m src.canvas_orchestrator    # Main orchestrator
 python src/canvas_client.py          # Basic Canvas API client
@@ -31,9 +36,10 @@ pip install -r requirements.txt     # Install 90+ production dependencies
 docker build -t canvas-scraper-enhanced .
 docker run -d --env-file .env canvas-scraper-enhanced
 
-# Testing
-pytest tests/                        # Run comprehensive test suite
-python scripts/test_supabase_setup.py  # Test Supabase integration
+# Testing and coverage
+pytest tests/                                      # Run comprehensive test suite
+pytest tests/ --cov=src.canvas_client --cov-report=html  # Run with coverage
+python scripts/test_supabase_setup.py             # Test Supabase integration
 ```
 
 ## Architecture Overview
@@ -114,10 +120,12 @@ The Canvas scraper is a **fully enhanced, production-ready microservices applica
 - **`src/config.py`**: Environment configuration with dotenv
 - **`database/schema.sql`**: Original PostgreSQL schema
 
-### Documentation ✅
-- **`DEPLOYMENT_ENHANCED.md`**: Complete v2.0 deployment guide
+### Documentation & Scripts ✅
+- **`docs/DEPLOYMENT_ENHANCED.md`**: Complete v2.0 deployment guide with AWS and Docker
+- **`docs/SUPABASE_DEPLOYMENT_GUIDE.md`**: Simplified database setup guide
 - **`README.md`**: Project overview and quick start
-- **Tests**: Comprehensive test suite in `tests/` directory
+- **`scripts/canvas_demo.py`**: Consolidated demo utility for testing Canvas API functions
+- **Tests**: Comprehensive test suite with 86% coverage in `tests/` directory
 
 ## Environment Setup
 
@@ -308,3 +316,54 @@ The **Canvas Scraper Enhanced v2.0** is a **fully production-ready system** with
 - Configurable for any Canvas LMS instance
 
 The system successfully transforms Canvas content into searchable, chunked text with intelligent deduplication and provides a complete solution for educational content management and analysis.
+
+## 📁 Project Structure
+
+### Organized Directory Layout ✅
+```
+CanvasScraper/
+├── 📁 src/                          # Core application modules
+│   ├── canvas_client.py             # Enhanced Canvas API client
+│   ├── canvas_orchestrator.py       # Main orchestration service
+│   ├── config.py                    # Environment configuration
+│   ├── course_manager.py            # Course selection management
+│   ├── file_processor_manager.py    # File processing coordination
+│   ├── content_fingerprint.py       # Content deduplication
+│   ├── state_manager.py             # Processing state tracking
+│   ├── text_chunker.py              # Intelligent text chunking
+│   ├── scheduler.py                 # Melbourne timezone scheduling
+│   ├── supabase_client.py          # Database integration
+│   └── assessment_processor.py      # Assignment/quiz processing
+│
+├── 📁 scripts/                      # Utility and demo scripts
+│   └── canvas_demo.py               # Consolidated testing utility
+│
+├── 📁 tests/                        # Comprehensive test suite
+│   ├── test_canvas_client.py        # Canvas client tests
+│   ├── test_canvas_client_comprehensive.py  # Complete coverage tests (86%)
+│   └── conftest.py                  # Test configuration
+│
+├── 📁 docs/                         # Organized documentation
+│   ├── DEPLOYMENT_ENHANCED.md       # AWS and Docker deployment guide
+│   └── SUPABASE_DEPLOYMENT_GUIDE.md # Database setup guide
+│
+├── 📁 database/                     # Database schemas and configs
+│   ├── schema_assessments.sql       # Simplified assessments schema
+│   └── schema_assessments_simple.sql # Minimal schema for quick setup
+│
+├── 📁 docker/                       # Docker configuration
+│   └── README.md                    # Container documentation
+│
+├── 📄 README.md                     # Main project overview
+├── 📄 CLAUDE.md                     # AI assistant context (this file)
+├── 📄 requirements.txt              # Python dependencies (90+)
+└── 📄 active_courses.json           # Generated course data
+```
+
+### Documentation Quick Reference ✅
+- **Getting Started**: [README.md](../README.md)
+- **Database Setup**: [docs/SUPABASE_DEPLOYMENT_GUIDE.md](docs/SUPABASE_DEPLOYMENT_GUIDE.md)  
+- **Production Deployment**: [docs/DEPLOYMENT_ENHANCED.md](docs/DEPLOYMENT_ENHANCED.md)
+- **Docker Setup**: [docker/README.md](docker/README.md)
+- **Testing**: Run `pytest tests/` for comprehensive test suite
+- **Demo**: Use `python scripts/canvas_demo.py` for quick testing

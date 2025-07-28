@@ -85,7 +85,7 @@ EXPOSE 8080
 
 # Default command - can be overridden
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python", "-m", "src.canvas_orchestrator"]
+CMD ["python", "scripts/run_enhanced_scraper.py", "run"]
 
 #===========================================
 # Stage 3: Development Environment
