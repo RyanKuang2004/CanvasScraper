@@ -280,30 +280,30 @@ def main() -> None:
                 courses = await client.get_active_courses()
                 print("Active Courses:", courses)
                 
-                for course in courses:
-                    course_id = course['id']
-                    course_name = course['name']
+                # for course in courses:
+                #     course_id = course['id']
+                #     course_name = course['name']
                     
-                    modules = await client.get_modules(session, course_id)
-                    if modules:
-                        print(f"Modules for {course_name}:", modules)
+                #     modules = await client.get_modules(session, course_id)
+                #     if modules:
+                #         print(f"Modules for {course_name}:", modules)
                         
-                        for module in modules:
-                            module_id = module['id']
-                            module_name = module['name']
+                #         for module in modules:
+                #             module_id = module['id']
+                #             module_name = module['name']
                             
-                            items = await client.get_module_items(session, course_id, module_id)
-                            if items:
-                                print(f"Items in Module {module_name}:", items)
+                #             items = await client.get_module_items(session, course_id, module_id)
+                #             if items:
+                #                 print(f"Items in Module {module_name}:", items)
                                 
-                                for item in items:
-                                    content = await client.fetch_module_item_content(session, course_id, item)
-                                    if content:
-                                        print(f"Content for {item['title']}: {content[:100]}...")  # Print first 100 chars
+                #                 for item in items:
+                #                     content = await client.fetch_module_item_content(session, course_id, item)
+                #                     if content:
+                #                         print(f"Content for {item['title']}: {content[:100]}...")  # Print first 100 chars
 
-                    due_dates = await client.get_due_dates(session, course_id)
-                    if due_dates:
-                        print(f"Upcoming Due Dates for {course_name}:", due_dates)
+                #     due_dates = await client.get_due_dates(session, course_id)
+                #     if due_dates:
+                #         print(f"Upcoming Due Dates for {course_name}:", due_dates)
                         
             except CanvasClientError as e:
                 print(f"Canvas client error: {e}")

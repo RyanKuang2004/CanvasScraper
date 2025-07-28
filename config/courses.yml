@@ -1,15 +1,15 @@
 # Canvas Scraper Course Configuration
 # Configure which courses to scrape and how to process them
+# Updated with University of Melbourne Canvas courses (2025)
 
 enabled_courses:
-  # Example course configurations
-  # Replace with your actual Canvas course IDs
+  # Academic Courses - High Priority
   
-  # Data Structures and Algorithms
-  123456:
-    name: "Data Structures and Algorithms"
+  # Machine Learning Applications for Health
+  213800:
+    name: "Machine Learning Applications for Health (COMP90089_2025_SM2)"
     enabled: true
-    modules: "all"  # or specific module IDs: [789, 790, 791]
+    modules: "all"
     file_types:
       - "pdf"
       - "pptx" 
@@ -18,29 +18,33 @@ enabled_courses:
     priority: "high"
     max_file_size_mb: 50
     
-  # Machine Learning Fundamentals  
-  789012:
-    name: "Machine Learning Fundamentals"
+  # Cluster and Cloud Computing
+  211755:
+    name: "Cluster and Cloud Computing (COMP90024_2025_SM1)"
     enabled: true
-    modules: [456, 457, 458]  # Only specific modules
-    file_types: ["pdf", "pptx"]
-    priority: "normal"
-    max_file_size_mb: 25
+    modules: "all"
+    file_types: ["pdf", "pptx", "docx"]
+    priority: "low"
+    max_file_size_mb: 50
     
-  # Software Engineering (currently disabled)
-  345678:
-    name: "Software Engineering"
-    enabled: false
-    reason: "Course completed - archival only"
+  # Statistical Learning Course
+  213007:
+    name: "A First Course In Statistical Learning (MAST90104_2025_SM2)"
+    enabled: true
+    modules: "all"
+    file_types: ["pdf", "pptx", "docx"]
+    priority: "high"
+    max_file_size_mb: 50
     
-  # Database Systems
-  567890:
-    name: "Database Systems"
+  # Mathematical Statistics
+  212167:
+    name: "Methods of Mathematical Statistics (MAST90105_2025_SM1)"
     enabled: true
     modules: "all"
     file_types: ["pdf", "docx"]
-    priority: "normal"
+    priority: "low"
     max_file_size_mb: 30
+    
 
 # Global scraping preferences
 scraping_preferences:
