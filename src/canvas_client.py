@@ -1,5 +1,5 @@
 import aiohttp
-from config import Config
+from .config import Config
 from datetime import datetime
 import asyncio
 import logging
@@ -277,51 +277,102 @@ class CanvasClient:
         self.logger.debug(f"Unsupported or missing content for item type: {item_type}")
         return None
 
-    async def get_due_dates(self, session: aiohttp.ClientSession, course_id: int) -> List[Dict[str, Union[str, None]]]:
-        """Retrieve upcoming assignments and quizzes for a course.
+    def _html_to_text(self, html_content: Optional[str]) -> str:
+        """Convert HTML content to plain text.
+        
+        Args:
+            html_content: HTML string to convert
+            
+        Returns:
+            Plain text string, empty string if None
+        """
+        if not html_content:
+            return ""
+        
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+            # Get text and clean up whitespace
+            text = soup.get_text(separator=' ', strip=True)
+            return ' '.join(text.split())  # Normalize whitespace
+        except ImportError:
+            self.logger.warning("BeautifulSoup not available, returning raw HTML")
+            return html_content
+        except Exception as e:
+            self.logger.error(f"Error converting HTML to text: {e}")
+            return html_content or ""
+
+    async def get_assignments(self, session: aiohttp.ClientSession, course_id: int) -> List[Dict[str, Any]]:
+        """Retrieve all assignments for a course.
         
         Args:
             session: The active client session
             course_id: The Canvas course ID
             
         Returns:
-            Combined list of upcoming assignment and quiz information
+            List of assignment dictionaries with name, due_at, type, and description
         """
-        current_date = datetime.now().date()
+        try:
+            assignments = await self._get_paginated(session, f"/courses/{course_id}/assignments")
+            if not assignments:
+                self.logger.info(f"No assignments found for course {course_id}")
+                return []
+            
+            assignment_data = []
+            for assignment in assignments:
+                assignment_info = {
+                    'name': assignment.get('name', 'Unnamed Assignment'),
+                    'due_at': assignment.get('due_at'),
+                    'type': 'assignment',
+                    'description': self._html_to_text(assignment.get('description'))
+                }
+                assignment_data.append(assignment_info)
+            
+            self.logger.info(f"Fetched {len(assignment_data)} assignments for course {course_id}")
+            return assignment_data
+            
+        except CanvasAPIError as e:
+            self.logger.error(f"Error fetching assignments for course {course_id}: {str(e)}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Unexpected error fetching assignments for course {course_id}: {str(e)}")
+            raise
 
-        def is_upcoming(due_at: Optional[str]) -> bool:
-            """Check if a due date is upcoming."""
-            if not due_at:
-                return False
-            try:
-                # Parse ISO 8601 date string
-                due_date = datetime.fromisoformat(due_at.replace('Z', '+00:00')).date()
-                return due_date >= current_date
-            except (ValueError, AttributeError) as e:
-                self.logger.warning(f"Invalid date format: {due_at}, error: {e}")
-                return False
-
-        # Get assignments (also paginated)
-        assignments = await self._get_paginated(session, f"/courses/{course_id}/assignments")
-        assignment_data: List[Dict[str, Union[str, None]]] = []
-        if assignments:
-            assignment_data = [
-                {'name': a['name'], 'due_at': a.get('due_at'), 'type': 'assignment'} 
-                for a in assignments
-                if is_upcoming(a.get('due_at'))
-            ]
-
-        # Get quizzes (also paginated)
-        quizzes = await self._get_paginated(session, f"/courses/{course_id}/quizzes")
-        quiz_data: List[Dict[str, Union[str, None]]] = []
-        if quizzes:
-            quiz_data = [
-                {'name': q['title'], 'due_at': q.get('due_at'), 'type': 'quiz'} 
-                for q in quizzes
-                if is_upcoming(q.get('due_at'))
-            ]
-
-        return assignment_data + quiz_data
+    async def get_quizzes(self, session: aiohttp.ClientSession, course_id: int) -> List[Dict[str, Any]]:
+        """Retrieve all quizzes for a course.
+        
+        Args:
+            session: The active client session
+            course_id: The Canvas course ID
+            
+        Returns:
+            List of quiz dictionaries with name, due_at, type, and description
+        """
+        try:
+            quizzes = await self._get_paginated(session, f"/courses/{course_id}/quizzes")
+            if not quizzes:
+                self.logger.info(f"No quizzes found for course {course_id}")
+                return []
+            
+            quiz_data = []
+            for quiz in quizzes:
+                quiz_info = {
+                    'name': quiz.get('title', 'Unnamed Quiz'),
+                    'due_at': quiz.get('due_at'),
+                    'type': 'quiz',
+                    'description': self._html_to_text(quiz.get('description'))
+                }
+                quiz_data.append(quiz_info)
+            
+            self.logger.info(f"Fetched {len(quiz_data)} quizzes for course {course_id}")
+            return quiz_data
+            
+        except CanvasAPIError as e:
+            self.logger.error(f"Error fetching quizzes for course {course_id}: {str(e)}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Unexpected error fetching quizzes for course {course_id}: {str(e)}")
+            raise
     
 def main() -> None:
     """Main function to run the Canvas client and fetch data."""
@@ -337,8 +388,25 @@ def main() -> None:
         """Run the Canvas data fetching process."""
         async with aiohttp.ClientSession() as session:
             try:
-                courses = await client.get_active_courses()
-                print("Active Courses:", courses)
+                # Test new assignment and quiz functions
+                course_id = 213007  # Statistical Learning course
+                
+                assignments = await client.get_assignments(session, course_id)
+                print(f"Assignments ({len(assignments)}):")
+                for assignment in assignments:
+                    print(f"  - {assignment['name']} (Due: {assignment['due_at']})")
+                    if assignment['description']:
+                        print(f"    Description: {assignment['description'][:100]}...")
+                
+                quizzes = await client.get_quizzes(session, course_id)
+                print(f"\nQuizzes ({len(quizzes)}):")
+                for quiz in quizzes:
+                    print(f"  - {quiz['name']} (Due: {quiz['due_at']})")
+                    if quiz['description']:
+                        print(f"    Description: {quiz['description'][:100]}...")
+                
+                # courses = await client.get_active_courses()
+                # print("Active Courses:", courses)
                 
                 # for course in courses:
                 #     course_id = course['id']
@@ -361,9 +429,10 @@ def main() -> None:
                 #                     if content:
                 #                         print(f"Content for {item['title']}: {content[:100]}...")  # Print first 100 chars
 
-                #     due_dates = await client.get_due_dates(session, course_id)
-                #     if due_dates:
-                #         print(f"Upcoming Due Dates for {course_name}:", due_dates)
+                #     assignments = await client.get_assignments(session, course_id) 
+                #     quizzes = await client.get_quizzes(session, course_id)
+                #     if assignments or quizzes:
+                #         print(f"Assignments and Quizzes for {course_name}:", assignments + quizzes)
                         
             except CanvasClientError as e:
                 print(f"Canvas client error: {e}")

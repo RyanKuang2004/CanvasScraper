@@ -9,8 +9,8 @@ import os
 # Add parent directory to path to import canvas_client
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from canvas_client import CanvasClient
-from config import Config
+from src.canvas_client import CanvasClient
+from src.config import Config
 
 
 class TestCanvasClient:
@@ -216,38 +216,93 @@ class TestCanvasClient:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_get_due_dates(self, client, mock_session):
-        """Test retrieving upcoming due dates."""
-        future_date = (datetime.now().date().replace(day=28)).isoformat()
-        past_date = "2020-01-01T00:00:00Z"
-        
+    async def test_get_assignments(self, client, mock_session):
+        """Test retrieving assignments with description processing."""
         mock_assignments = [
-            {"name": "Assignment 1", "due_at": future_date},
-            {"name": "Assignment 2", "due_at": past_date},
-            {"name": "Assignment 3", "due_at": None}
+            {
+                "name": "Assignment 1",
+                "due_at": "2024-12-31T23:59:59Z",
+                "description": "<p>This is a <strong>test</strong> assignment</p>"
+            },
+            {
+                "name": "Assignment 2", 
+                "due_at": None,
+                "description": None
+            }
         ]
         
-        mock_quizzes = [
-            {"title": "Quiz 1", "due_at": future_date},
-            {"title": "Quiz 2", "due_at": past_date}
-        ]
-
-        with patch.object(client, '_get') as mock_get:
-            mock_get.side_effect = [mock_assignments, mock_quizzes]
+        with patch.object(client, '_get_paginated') as mock_get_paginated:
+            mock_get_paginated.return_value = mock_assignments
             
-            result = await client.get_due_dates(mock_session, 123)
+            result = await client.get_assignments(mock_session, 123)
             
             expected = [
-                {"name": "Assignment 1", "due_at": future_date, "type": "assignment"},
-                {"name": "Quiz 1", "due_at": future_date, "type": "quiz"}
+                {
+                    "name": "Assignment 1",
+                    "due_at": "2024-12-31T23:59:59Z", 
+                    "type": "assignment",
+                    "description": "This is a test assignment"
+                },
+                {
+                    "name": "Assignment 2",
+                    "due_at": None,
+                    "type": "assignment", 
+                    "description": ""
+                }
             ]
             assert result == expected
 
-    def test_is_upcoming_date_logic(self, client):
-        """Test the date logic in get_due_dates method."""
-        # This would require accessing the nested function, so we test it indirectly
-        # through the full get_due_dates method
-        pass
+    @pytest.mark.asyncio
+    async def test_get_quizzes(self, client, mock_session):
+        """Test retrieving quizzes with description processing."""
+        mock_quizzes = [
+            {
+                "title": "Quiz 1",
+                "due_at": "2024-12-31T23:59:59Z",
+                "description": "<div><h2>Quiz Instructions</h2><p>Complete all questions</p></div>"
+            },
+            {
+                "title": "Quiz 2",
+                "due_at": None, 
+                "description": ""
+            }
+        ]
+        
+        with patch.object(client, '_get_paginated') as mock_get_paginated:
+            mock_get_paginated.return_value = mock_quizzes
+            
+            result = await client.get_quizzes(mock_session, 123)
+            
+            expected = [
+                {
+                    "name": "Quiz 1",
+                    "due_at": "2024-12-31T23:59:59Z",
+                    "type": "quiz",
+                    "description": "Quiz Instructions Complete all questions"
+                },
+                {
+                    "name": "Quiz 2", 
+                    "due_at": None,
+                    "type": "quiz",
+                    "description": ""
+                }
+            ]
+            assert result == expected
+
+    def test_html_to_text_conversion(self, client):
+        """Test HTML to text conversion helper method."""
+        # Test with HTML content
+        html_content = "<p>This is <strong>bold</strong> and <em>italic</em> text.</p>"
+        result = client._html_to_text(html_content)
+        assert result == "This is bold and italic text."
+        
+        # Test with None
+        result = client._html_to_text(None)
+        assert result == ""
+        
+        # Test with empty string
+        result = client._html_to_text("")
+        assert result == ""
 
 
 if __name__ == "__main__":
