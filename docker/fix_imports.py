@@ -10,8 +10,12 @@ from pathlib import Path
 
 def fix_python_path():
     """Ensure Python path is correctly configured."""
-    app_path = '/app'
-    src_path = '/app/src'
+    app_path = Path(__file__).parent
+    src_path = app_path / 'src'
+    
+    # Convert to string for sys.path
+    app_path = str(app_path)
+    src_path = str(src_path)
     
     # Add paths if not already present
     if app_path not in sys.path:
@@ -35,17 +39,7 @@ def test_imports():
         
     except ImportError as e:
         print(f"❌ Import error: {e}")
-        
-        # Try alternative import strategy
-        try:
-            import canvas_orchestrator
-            import supabase_client
-            import config
-            print("✅ Alternative imports successful")
-            return True
-        except ImportError as e2:
-            print(f"❌ Alternative imports also failed: {e2}")
-            return False
+        return False
 
 def main():
     """Main import validation."""
