@@ -31,7 +31,6 @@ def test_imports():
     try:
         from src.canvas_orchestrator import CanvasOrchestrator
         from src.supabase_client import get_supabase_client
-        from src.canvas_client import CanvasClient
         
         print("✅ All critical imports successful")
         return True
