@@ -66,6 +66,9 @@ RUN mkdir -p /app/logs /app/data /app/downloads /app/config && \
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Copy import fix script
+COPY docker/fix_imports.py /app/docker/fix_imports.py
+
 # Health check
 COPY docker/healthcheck.py /healthcheck.py
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

@@ -161,19 +161,9 @@ initialize_app() {
     # Create log file
     touch /app/logs/canvas_scraper.log
     
-    # Test Python imports
+    # Test Python imports with enhanced validation
     log "Testing Python dependencies..."
-    python -c "
-import sys
-sys.path.insert(0, '/app')
-try:
-    from src.canvas_orchestrator import CanvasOrchestrator
-    from src.supabase_client import get_supabase_client
-    print('✅ All dependencies imported successfully')
-except ImportError as e:
-    print(f'❌ Import error: {e}')
-    sys.exit(1)
-"
+    python /app/docker/fix_imports.py
     
     if [[ $? -ne 0 ]]; then
         error "Python dependency check failed"
