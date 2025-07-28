@@ -1,5 +1,5 @@
 import aiohttp
-from .config import Config
+from config import Config
 from datetime import datetime
 import asyncio
 import logging
