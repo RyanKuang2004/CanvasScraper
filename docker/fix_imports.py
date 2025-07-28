@@ -24,14 +24,13 @@ def fix_python_path():
         sys.path.insert(0, src_path)
     
     print(f"✅ Python path configured: {sys.path[:3]}")
+    print(f"Resolved src path: {src_path}, exists: {os.path.exists(src_path)}")
 
 def test_imports():
     """Test critical imports."""
     try:
-        # Test absolute imports
         from src.canvas_orchestrator import CanvasOrchestrator
         from src.supabase_client import get_supabase_client
-        from src.config import Config
         from src.canvas_client import CanvasClient
         
         print("✅ All critical imports successful")
