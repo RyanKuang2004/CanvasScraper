@@ -395,5 +395,8 @@ async def main():
     await scheduler.stop_scheduler()
 
 
+# Alias for backward compatibility with tests
+Scheduler = MelbourneScheduler
+
 if __name__ == "__main__":
     asyncio.run(main())

@@ -180,6 +180,55 @@ class StateManager:
             self.logger.error(f"Failed to mark processing started for {entity_type}:{entity_id}: {e}")
             return False
     
+    async def update_state(self, 
+                          entity_type: str, 
+                          entity_id: str, 
+                          fingerprint: str,
+                          status: ProcessingStatus,
+                          metadata: Dict[str, Any] = None,
+                          error_message: str = None) -> bool:
+        """
+        Update processing state for an entity
+        
+        Args:
+            entity_type: Type of entity
+            entity_id: Canvas entity ID
+            fingerprint: Current fingerprint
+            status: Processing status
+            metadata: Additional metadata
+            error_message: Error message if failed
+            
+        Returns:
+            True if successfully updated, False otherwise
+        """
+        try:
+            existing_state = await self._get_processing_state(entity_type, entity_id)
+            
+            state = ProcessingState(
+                entity_type=entity_type,
+                entity_id=entity_id,
+                fingerprint=fingerprint,
+                status=status,
+                last_processed_at=datetime.now(),
+                created_at=existing_state.created_at if existing_state else datetime.now(),
+                metadata=metadata or {},
+                error_message=error_message,
+                retry_count=existing_state.retry_count if existing_state else 0
+            )
+            
+            await self._save_processing_state(state)
+            
+            # Update cache
+            cache_key = self._get_cache_key(entity_type, entity_id)
+            self._state_cache[cache_key] = state
+            
+            self.logger.debug(f"Updated state for {entity_type}:{entity_id} to {status.value}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to update state for {entity_type}:{entity_id}: {e}")
+            return False
+
     async def mark_processing_completed(self, 
                                       entity_type: str, 
                                       entity_id: str, 

@@ -21,7 +21,7 @@ except ImportError:
     PPTX_AVAILABLE = False
 
 
-class PowerPointProcessor(BaseFileProcessor):
+class PPTXProcessor(BaseFileProcessor):
     """PowerPoint PPTX file processor"""
     
     def __init__(self):

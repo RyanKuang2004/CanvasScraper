@@ -45,7 +45,7 @@ class TextChunk:
             self.content_hash = hashlib.sha256(self.content.encode('utf-8')).hexdigest()
 
 
-class SmartChunker:
+class TextChunker:
     """Intelligent text chunking with semantic awareness"""
     
     def __init__(self, 
@@ -469,7 +469,7 @@ async def main():
     """Test the text chunker"""
     logging.basicConfig(level=logging.INFO)
     
-    chunker = SmartChunker(chunk_size=500, overlap=100)
+    chunker = TextChunker(chunk_size=500, overlap=100)
     
     # Test text with structure
     test_text = """
