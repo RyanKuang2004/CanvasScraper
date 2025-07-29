@@ -136,6 +136,18 @@ class CanvasClient:
         self.logger.info(f"Fetched a total of {len(all_results)} items from endpoint: {endpoint}")
         return all_results
 
+    async def get_course(self, course_id: int) -> Optional[Dict[str, Any]]:
+        """Retrieve information about a specific course.
+        
+        Args:
+            course_id: The Canvas course ID
+            
+        Returns:
+            A dictionary containing course information if successful, None otherwise
+        """
+        async with self._get_session() as session:
+            return await self._get(session, f"/courses/{course_id}")
+    
     async def get_active_courses(self) -> List[Dict[str, Union[int, str]]]:
         """Retrieve all active courses for the authenticated user by handling pagination.
         
@@ -158,6 +170,18 @@ class CanvasClient:
                 for course in active_courses
             ]
 
+    async def get_course_modules(self, course_id: int) -> Optional[List[Dict[str, Any]]]:
+        """Retrieve all modules for a course.
+        
+        Args:
+            course_id: The Canvas course ID
+            
+        Returns:
+            A list of module dictionaries or None if not found
+        """
+        async with self._get_session() as session:
+            return await self._get_paginated(session, f"/courses/{course_id}/modules")
+    
     async def get_modules(self, session: aiohttp.ClientSession, course_id: int) -> Optional[List[Dict[str, Any]]]:
         """Retrieve all modules for a course.
         
