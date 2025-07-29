@@ -261,10 +261,7 @@ class TestDockerIntegration:
         # Test Canvas client initialization
         from src.canvas_client import CanvasClient
         
-        client = CanvasClient(
-            api_token=mock_env_vars['CANVAS_API_TOKEN'],
-            base_url=canvas_url
-        )
+        client = CanvasClient()
         
         # Test basic connectivity
         response = client.session.get(f"{canvas_url}/users/self")

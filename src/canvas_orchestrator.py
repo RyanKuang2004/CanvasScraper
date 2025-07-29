@@ -35,10 +35,7 @@ class CanvasOrchestrator:
         self.file_processor = FileProcessorManager()
         self.supabase = get_supabase_client()
         self.scheduler = MelbourneScheduler()
-        self.canvas_client = CanvasClient(
-            base_url=self.config.CANVAS_URL,
-            access_token=self.config.CANVAS_API_TOKEN
-        )
+        self.canvas_client = CanvasClient()
         
         # Processing statistics
         self.stats = {
