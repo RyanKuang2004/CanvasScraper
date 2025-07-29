@@ -52,7 +52,8 @@ class ScraperRunner:
                 print("   Set SUPABASE_URL and SUPABASE_ANON_KEY environment variables")
             
             # Load configuration
-            enabled_courses = await self.orchestrator.course_manager.get_enabled_courses()
+            await self.orchestrator.course_manager.load_configuration()
+            enabled_courses = self.orchestrator.course_manager.get_enabled_courses()
             if not enabled_courses:
                 print("❌ No courses enabled for processing")
                 print("   Configure courses in config/courses.yml")

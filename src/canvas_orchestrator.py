@@ -75,7 +75,7 @@ class CanvasOrchestrator:
             
             # Load course configuration
             course_config = await self.course_manager.load_configuration()
-            enabled_courses = await self.course_manager.get_enabled_courses()
+            enabled_courses = self.course_manager.get_enabled_courses()
             
             if not enabled_courses:
                 self.logger.warning("No courses enabled for processing")
@@ -84,8 +84,8 @@ class CanvasOrchestrator:
             self.logger.info(f"Processing {len(enabled_courses)} enabled courses")
             
             # Process each enabled course
-            for course_id in enabled_courses:
-                await self._process_course(course_id, force_reprocess)
+            for course_config in enabled_courses:
+                await self._process_course(course_config.course_id, force_reprocess)
                 self.stats['courses_processed'] += 1
             
             # Calculate total processing time
@@ -279,7 +279,7 @@ class CanvasOrchestrator:
                     stats['supabase_stats'] = await self.supabase.get_course_statistics(course_id)
                 else:
                     # Get stats for all enabled courses
-                    enabled_courses = await self.course_manager.get_enabled_courses()
+                    enabled_courses = self.course_manager.get_enabled_courses()
                     course_stats = {}
                     for cid in enabled_courses[:5]:  # Limit to first 5 courses
                         course_stats[cid] = await self.supabase.get_course_statistics(cid)
@@ -347,7 +347,7 @@ async def main():
     
     # Load course configuration
     config = await orchestrator.course_manager.load_configuration()
-    enabled_courses = await orchestrator.course_manager.get_enabled_courses()
+    enabled_courses = orchestrator.course_manager.get_enabled_courses()
     
     print(f"Configuration loaded: {len(enabled_courses)} courses enabled")
     
