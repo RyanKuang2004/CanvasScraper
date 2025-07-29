@@ -9,11 +9,12 @@ import json
 import sys
 from pathlib import Path
 
+import aiohttp
+
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from canvas_client import CanvasClient
-import aiohttp
 
 async def get_active_courses():
     """Get and display active courses"""

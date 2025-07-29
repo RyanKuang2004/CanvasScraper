@@ -8,17 +8,17 @@ deduplication, chunking, and Supabase storage.
 
 import asyncio
 import logging
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
 import time
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, List, Optional, Tuple
 
-from course_manager import CourseManager
-from file_processor_manager import FileProcessorManager, ProcessingRequest
-from supabase_client import get_supabase_client
-from scheduler import MelbourneScheduler
 from canvas_client import CanvasClient
 from config import Config
+from course_manager import CourseManager
+from file_processor_manager import FileProcessorManager, ProcessingRequest
+from scheduler import MelbourneScheduler
+from supabase_client import get_supabase_client
 
 
 class CanvasOrchestrator:

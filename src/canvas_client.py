@@ -1,10 +1,12 @@
-import aiohttp
-from config import Config
-from datetime import datetime
 import asyncio
 import logging
-from typing import Dict, List, Optional, Union, Any
 from contextlib import asynccontextmanager
+from datetime import datetime
+from typing import Dict, List, Optional, Union, Any
+
+import aiohttp
+
+from config import Config
 
 class CanvasClientError(Exception):
     """Base exception for Canvas client errors."""
@@ -405,34 +407,7 @@ def main() -> None:
                     if quiz['description']:
                         print(f"    Description: {quiz['description'][:100]}...")
                 
-                # courses = await client.get_active_courses()
-                # print("Active Courses:", courses)
-                
-                # for course in courses:
-                #     course_id = course['id']
-                #     course_name = course['name']
-                    
-                #     modules = await client.get_modules(session, course_id)
-                #     if modules:
-                #         print(f"Modules for {course_name}:", modules)
-                        
-                #         for module in modules:
-                #             module_id = module['id']
-                #             module_name = module['name']
-                            
-                #             items = await client.get_module_items(session, course_id, module_id)
-                #             if items:
-                #                 print(f"Items in Module {module_name}:", items)
-                                
-                #                 for item in items:
-                #                     content = await client.fetch_module_item_content(session, course_id, item)
-                #                     if content:
-                #                         print(f"Content for {item['title']}: {content[:100]}...")  # Print first 100 chars
-
-                #     assignments = await client.get_assignments(session, course_id) 
-                #     quizzes = await client.get_quizzes(session, course_id)
-                #     if assignments or quizzes:
-                #         print(f"Assignments and Quizzes for {course_name}:", assignments + quizzes)
+                # Alternative demo code for full course processing can be added here if needed
                         
             except CanvasClientError as e:
                 print(f"Canvas client error: {e}")
