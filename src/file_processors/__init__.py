@@ -7,7 +7,7 @@ and other document formats with intelligent text extraction.
 
 from .base_processor import BaseFileProcessor, ProcessingResult, ExtractionMetadata
 from .pdf_processor import PDFProcessor
-from .pptx_processor import PowerPointProcessor
+from .pptx_processor import PPTXProcessor
 from .docx_processor import WordProcessor
 
 __all__ = [
@@ -15,6 +15,6 @@ __all__ = [
     'ProcessingResult', 
     'ExtractionMetadata',
     'PDFProcessor',
-    'PowerPointProcessor',
+    'PPTXProcessor',
     'WordProcessor'
 ]

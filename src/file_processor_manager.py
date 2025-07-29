@@ -15,10 +15,10 @@ import time
 
 from content_fingerprint import FingerprintGenerator
 from state_manager import StateManager
-from text_chunker import SmartChunker, TextChunk
+from text_chunker import TextChunker, TextChunk
 from file_processors.base_processor import BaseFileProcessor, ProcessingResult, FileProcessorFactory
 from file_processors.pdf_processor import PDFProcessor
-from file_processors.pptx_processor import PowerPointProcessor
+from file_processors.pptx_processor import PPTXProcessor
 from file_processors.docx_processor import WordProcessor
 
 
@@ -59,7 +59,7 @@ class FileProcessorManager:
         # Initialize components
         self.fingerprint_generator = FingerprintGenerator()
         self.state_manager = StateManager()
-        self.chunker = SmartChunker(
+        self.chunker = TextChunker(
             chunk_size=chunk_size,
             overlap=overlap,
             preserve_structure=True
@@ -86,7 +86,7 @@ class FileProcessorManager:
         
         # PowerPoint processor
         self.processor_factory.register_processor(
-            PowerPointProcessor,
+            PPTXProcessor,
             extensions=['.pptx'],
             mime_types=['application/vnd.openxmlformats-officedocument.presentationml.presentation']
         )
