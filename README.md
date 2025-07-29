@@ -64,6 +64,7 @@ canvas-scraper/
 ├── .env.example                  # Environment template
 ├── requirements.txt              # Python dependencies
 ├── CLAUDE.md                     # AI assistant guidance
+├── DOCKER_COMPOSE_GUIDE.md       # Docker deployment guide
 └── README.md                     # This file
 ```
 
@@ -159,6 +160,41 @@ pytest --cov=src tests/
 - **Minimal Dependencies**: Lean package footprint
 - **Efficient Logging**: Structured logging with rotation
 - **Clean Code**: Maintainable and readable codebase
+
+## 🚀 Production Deployment
+
+### AWS Ubuntu Deployment
+For production deployment on AWS EC2 Ubuntu instances:
+
+```bash
+# Automated AWS deployment
+./scripts/deploy_aws_ubuntu.sh
+
+# Manual deployment - see full guide
+# docs/AWS_UBUNTU_DEPLOYMENT.md
+```
+
+### Docker Deployment
+For containerized deployment with Docker Compose:
+
+```bash
+# Production deployment
+docker compose up -d
+
+# AWS optimized deployment  
+docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
+
+# See complete Docker guide
+# DOCKER_COMPOSE_GUIDE.md
+```
+
+### Database Integration
+For enhanced features with Supabase:
+
+```bash
+# See database setup guide
+# docs/SUPABASE_DEPLOYMENT_GUIDE.md
+```
 
 ## 🤝 Contributing
 
