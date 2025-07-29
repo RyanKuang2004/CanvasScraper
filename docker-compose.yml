@@ -2,43 +2,51 @@ version: '3.8'
 
 services:
   #==========================================
-  # Canvas Scraper Application
+  # Canvas Scraper Enhanced v2.0
   #==========================================
   canvas-scraper:
     build:
       context: .
       target: production
       dockerfile: Dockerfile
-    container_name: canvas-scraper
+    container_name: canvas-scraper-enhanced
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
+      # Core Application Configuration
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_DIR=/app/logs
+      
       # Canvas API Configuration
       - CANVAS_API_TOKEN=${CANVAS_API_TOKEN}
       - CANVAS_URL=${CANVAS_URL:-https://canvas.lms.unimelb.edu.au/api/v1}
       
-      # Logging Configuration
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - LOG_DIR=/app/logs
-      
-      # Optional: Cron scheduling
-      - ENABLE_CRON=${ENABLE_CRON:-false}
-      - CRON_SCHEDULE=${CRON_SCHEDULE:-0 2 * * *}
-      
-      # Health check server
+      # Enhanced v2.0 Features
+      - ENABLE_CRON=${ENABLE_CRON:-true}
+      - CRON_SCHEDULE=${CRON_SCHEDULE:-0 2,14 * * *}
       - ENABLE_HEALTH_SERVER=${ENABLE_HEALTH_SERVER:-true}
       
-      # Optional: Supabase integration
+      # Supabase Integration (Enhanced)
       - SUPABASE_URL=${SUPABASE_URL:-}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
+      
+      # Processing Configuration
+      - CONCURRENT_DOWNLOADS=${CONCURRENT_DOWNLOADS:-3}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-50}
+      - CHUNK_SIZE=${CHUNK_SIZE:-1000}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-200}
     volumes:
-      # Persistent log storage
+      # Enhanced v2.0 Volume Structure
+      - ./config:/app/config  # YAML configuration files
       - canvas_logs:/app/logs
-      
-      # Data persistence (for downloaded files)
       - canvas_data:/app/data
+      - canvas_downloads:/app/downloads  # Temporary download storage
       
-      # Configuration override (optional)
+      # Environment file (if not using env_file)
       - ./.env:/app/.env:ro
     ports:
       # Health check endpoint
@@ -48,12 +56,25 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 40s  # Increased for v2.0 initialization
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - canvas-network
 
   #==========================================
-  # Optional: PostgreSQL Database
+  # Optional: PostgreSQL Database (Legacy)
   #==========================================
   postgres:
     image: postgres:15-alpine
@@ -76,7 +97,34 @@ services:
     networks:
       - canvas-network
     profiles:
-      - database
+      - database  # Use: docker compose --profile database up
+      
+  #==========================================
+  # Optional: Supabase Local Development
+  #==========================================
+  supabase-db:
+    image: supabase/postgres:15.1.0.117
+    container_name: canvas-supabase-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=${SUPABASE_DB_PASSWORD:-supabase_password}
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=supabase_admin
+      - POSTGRES_PORT=5432
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+      - ./database/supabase_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "54322:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supabase_admin -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - canvas-network
+    profiles:
+      - supabase  # Use: docker compose --profile supabase up
 
   #==========================================
   # Optional: Redis for Job Queue
@@ -101,56 +149,91 @@ services:
       - queue
 
   #==========================================
-  # Development Environment
+  # Development Environment (Enhanced v2.0)
   #==========================================
   canvas-dev:
     build:
       context: .
       target: development
       dockerfile: Dockerfile
-    container_name: canvas-dev
+    container_name: canvas-scraper-dev
     environment:
+      # Core Development Configuration
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - LOG_LEVEL=DEBUG
+      
+      # Canvas API Configuration
       - CANVAS_API_TOKEN=${CANVAS_API_TOKEN}
       - CANVAS_URL=${CANVAS_URL:-https://canvas.lms.unimelb.edu.au/api/v1}
-      - LOG_LEVEL=DEBUG
-      - PYTHONDONTWRITEBYTECODE=1
+      
+      # Development Features
+      - ENABLE_HEALTH_SERVER=true
+      - ENABLE_CRON=false  # Disable cron in development
+      
+      # Optional Supabase (Development)
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
     volumes:
-      # Mount source code for live development
+      # Live code mounting for development
       - ./src:/app/src
       - ./scripts:/app/scripts
       - ./tests:/app/tests
       - ./database:/app/database
+      - ./config:/app/config
+      - ./docker:/app/docker
       
-      # Development data
+      # Development data persistence
       - canvas_dev_logs:/app/logs
       - canvas_dev_data:/app/data
+      - canvas_dev_downloads:/app/downloads
     ports:
-      - "8081:8080"
+      - "8081:8080"  # Development health check
     networks:
       - canvas-network
     profiles:
-      - development
+      - development  # Use: docker compose --profile development up
 
 #==========================================
-# Volumes
+# Volumes (Enhanced v2.0)
 #==========================================
 volumes:
   # Production volumes
   canvas_logs:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs
   canvas_data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
+  canvas_downloads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./downloads
   
   # Database volumes
   postgres_data:
     driver: local
   redis_data:
     driver: local
+  supabase_db_data:
+    driver: local
   
   # Development volumes
   canvas_dev_logs:
     driver: local
   canvas_dev_data:
+    driver: local
+  canvas_dev_downloads:
     driver: local
 
 #==========================================
@@ -162,3 +245,24 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+
+#==========================================
+# Usage Examples:
+#==========================================
+# Production (default):
+#   docker compose up -d
+#
+# With PostgreSQL:
+#   docker compose --profile database up -d
+#
+# With Supabase local:
+#   docker compose --profile supabase up -d
+#
+# Development:
+#   docker compose --profile development up -d
+#
+# With Redis queue:
+#   docker compose --profile queue up -d
+#
+# Multiple profiles:
+#   docker compose --profile database --profile queue up -d

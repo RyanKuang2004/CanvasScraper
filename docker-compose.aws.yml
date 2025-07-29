@@ -1,0 +1,74 @@
+# Docker Compose AWS Override
+# Optimized for AWS EC2 deployment
+# Usage: docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d
+
+version: '3.8'
+
+services:
+  canvas-scraper:
+    # AWS-optimized configuration
+    container_name: canvas-scraper-enhanced
+    
+    # Use env_file for AWS deployment
+    env_file:
+      - .env
+    
+    # AWS volume configuration (matches deployment guide)
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./downloads:/app/downloads
+      - ./.env:/app/.env:ro
+    
+    # AWS network configuration
+    ports:
+      - "8080:8080"
+    
+    # AWS-optimized health check
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # AWS instance resource limits (adjustable based on instance type)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'    # Suitable for t3.medium
+          memory: 3G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # AWS CloudWatch compatible logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=canvas-scraper,environment=production"
+    
+    # AWS deployment environment variables
+    environment:
+      # Optimize for AWS instance size
+      - CONCURRENT_DOWNLOADS=3    # Conservative for t3.medium
+      - MAX_FILE_SIZE_MB=50
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=200
+      
+      # AWS-specific settings
+      - ENABLE_HEALTH_SERVER=true
+      - ENABLE_CRON=true
+      - CRON_SCHEDULE=0 2,14 * * *  # 2 AM and 2 PM UTC (adjust for timezone)
+      
+      # Performance optimization
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+
+# Remove unused services for AWS deployment
+networks:
+  canvas-network:
+    driver: bridge

@@ -1,0 +1,99 @@
+# Docker Compose Production Override
+# Usage: docker compose -f docker-compose.yml -f docker-compose.production.yml up -d
+
+version: '3.8'
+
+services:
+  canvas-scraper:
+    # Production-optimized resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    
+    # Enhanced production logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
+    
+    # Production health check with longer intervals
+    healthcheck:
+      test: ["CMD", "python", "/healthcheck.py"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+    
+    # Production environment variables
+    environment:
+      # Optimized for production
+      - CONCURRENT_DOWNLOADS=5
+      - MAX_FILE_SIZE_MB=100
+      - ENABLE_CRON=true
+      - CRON_SCHEDULE=0 2,14 * * *
+      
+      # Production security
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      
+      # Enhanced logging
+      - LOG_LEVEL=INFO
+      - STRUCTURED_LOGGING=true
+    
+    # Production volume mounts (use absolute paths in production)
+    volumes:
+      - /opt/canvas-scraper/config:/app/config:ro
+      - /opt/canvas-scraper/logs:/app/logs
+      - /opt/canvas-scraper/data:/app/data
+      - /opt/canvas-scraper/downloads:/app/downloads
+      - /opt/canvas-scraper/.env:/app/.env:ro
+
+# Optional: Production monitoring service
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: canvas-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - canvas-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: canvas-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - canvas-network
+    profiles:
+      - monitoring
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

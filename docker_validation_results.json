@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-07-29T11:00:14.118904",
+  "total_tests": 10,
+  "passed_tests": 4,
+  "failed_tests": 6,
+  "warnings": [],
+  "deployment_ready": false,
+  "detailed_results": [
+    {
+      "test": "environment_setup",
+      "passed": true,
+      "message": "Environment variables configured correctly",
+      "timestamp": "2025-07-29T11:00:12.593178"
+    },
+    {
+      "test": "critical_imports",
+      "passed": false,
+      "message": "Failed imports: 12",
+      "timestamp": "2025-07-29T11:00:13.933915",
+      "error": "src.canvas_client: No module named 'aiohttp'\nsrc.canvas_orchestrator: No module named 'aiohttp'\nsrc.config: No module named 'dotenv'\nsrc.course_manager: No module named 'aiohttp'\nsrc.scheduler: No module named 'apscheduler'\naiohttp: No module named 'aiohttp'\npdfplumber: No module named 'pdfplumber'\ntiktoken: No module named 'tiktoken'\napscheduler: No module named 'apscheduler'\nsupabase: No module named 'supabase'\npptx: No module named 'pptx'\ndocx: No module named 'docx'",
+      "traceback": "NoneType: None\n"
+    },
+    {
+      "test": "file_processors",
+      "passed": false,
+      "message": "File processor testing failed",
+      "timestamp": "2025-07-29T11:00:13.935960",
+      "error": "cannot import name 'PPTXProcessor' from 'src.file_processors.pptx_processor' (/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/src/file_processors/pptx_processor.py)",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/scripts/docker_pre_deployment_test.py\", line 173, in test_file_processors\n    from src.file_processors.pptx_processor import PPTXProcessor\nImportError: cannot import name 'PPTXProcessor' from 'src.file_processors.pptx_processor' (/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/src/file_processors/pptx_processor.py)\n"
+    },
+    {
+      "test": "text_processing",
+      "passed": false,
+      "message": "Text processing testing failed",
+      "timestamp": "2025-07-29T11:00:13.944549",
+      "error": "cannot import name 'TextChunker' from 'src.text_chunker' (/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/src/text_chunker.py)",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/scripts/docker_pre_deployment_test.py\", line 205, in test_text_processing\n    from src.text_chunker import TextChunker\nImportError: cannot import name 'TextChunker' from 'src.text_chunker' (/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/src/text_chunker.py). Did you mean: 'text_chunker'?\n"
+    },
+    {
+      "test": "configuration_handling",
+      "passed": true,
+      "message": "Configuration handling and validation working correctly",
+      "timestamp": "2025-07-29T11:00:13.950234"
+    },
+    {
+      "test": "state_management",
+      "passed": false,
+      "message": "State management testing failed",
+      "timestamp": "2025-07-29T11:00:13.951367",
+      "error": "'StateManager' object has no attribute 'update_state'",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/scripts/docker_pre_deployment_test.py\", line 308, in test_state_management\n    state_manager.update_state(test_key, test_state)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'StateManager' object has no attribute 'update_state'\n"
+    },
+    {
+      "test": "scheduler_functionality",
+      "passed": false,
+      "message": "Scheduler testing failed",
+      "timestamp": "2025-07-29T11:00:13.969099",
+      "error": "No module named 'apscheduler'",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/scripts/docker_pre_deployment_test.py\", line 333, in test_scheduler_functionality\n    from src.scheduler import Scheduler\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/src/scheduler.py\", line 14, in <module>\n    from apscheduler.schedulers.asyncio import AsyncIOScheduler\nModuleNotFoundError: No module named 'apscheduler'\n"
+    },
+    {
+      "test": "docker_entrypoint_script",
+      "passed": true,
+      "message": "Docker entrypoint script validation successful",
+      "timestamp": "2025-07-29T11:00:14.105469"
+    },
+    {
+      "test": "error_handling_logging",
+      "passed": true,
+      "message": "Error handling and logging functionality working",
+      "timestamp": "2025-07-29T11:00:14.107329"
+    },
+    {
+      "test": "resource_constraints",
+      "passed": false,
+      "message": "Resource constraint testing failed",
+      "timestamp": "2025-07-29T11:00:14.112628",
+      "error": "No module named 'psutil'",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/c/Users/ryank/OneDrive/Documents/GitHub/CanvasScraper/scripts/docker_pre_deployment_test.py\", line 440, in test_resource_constraints\n    import psutil\nModuleNotFoundError: No module named 'psutil'\n"
+    }
+  ]
+}
