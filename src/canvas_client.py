@@ -195,7 +195,20 @@ class CanvasClient:
         # Note: This endpoint is also paginated. For full functionality, it should also use _get_paginated.
         return await self._get_paginated(session, f"/courses/{course_id}/modules")
 
-    async def get_module_items(self, session: aiohttp.ClientSession, course_id: int, module_id: int) -> Optional[List[Dict[str, Any]]]:
+    async def get_module_items(self, course_id: int, module_id: int) -> Optional[List[Dict[str, Any]]]:
+        """Retrieve all items within a module.
+        
+        Args:
+            course_id: The Canvas course ID
+            module_id: The Canvas module ID
+            
+        Returns:
+            A list of module item dictionaries or None if not found
+        """
+        async with self._get_session() as session:
+            return await self._get_paginated(session, f"/courses/{course_id}/modules/{module_id}/items")
+
+    async def get_module_items_with_session(self, session: aiohttp.ClientSession, course_id: int, module_id: int) -> Optional[List[Dict[str, Any]]]:
         """Retrieve all items within a module.
         
         Args:

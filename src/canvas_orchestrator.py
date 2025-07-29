@@ -126,7 +126,7 @@ class CanvasOrchestrator:
                 module_id = str(module_data.get('id'))
                 
                 # Check if module should be processed
-                if not await self.course_manager.should_process_module(course_id, module_id):
+                if not self.course_manager.should_process_module(int(course_id), int(module_id)):
                     self.logger.debug(f"Skipping module {module_id} (not enabled)")
                     continue
                 
@@ -150,7 +150,7 @@ class CanvasOrchestrator:
             self.logger.info(f"Processing module {module_name} ({module_id})")
             
             # Get module items
-            items = await self.canvas_client.get_module_items(course_id, module_id)
+            items = await self.canvas_client.get_module_items(int(course_id), int(module_id))
             if not items:
                 self.logger.debug(f"No items found in module {module_id}")
                 return
@@ -159,7 +159,7 @@ class CanvasOrchestrator:
             file_items = [
                 item for item in items 
                 if item.get('type') == 'File' and 
-                await self.course_manager.should_process_file(course_id, item)
+                self.course_manager.should_process_file(int(course_id), item)
             ]
             
             if not file_items:
@@ -271,7 +271,7 @@ class CanvasOrchestrator:
             stats = {
                 'orchestrator_stats': self.stats,
                 'file_processor_stats': await self.file_processor.get_processing_statistics(),
-                'course_manager_stats': await self.course_manager.get_statistics()
+                # 'course_manager_stats': await self.course_manager.get_statistics()  # Method not implemented
             }
             
             if self.supabase.is_available():
